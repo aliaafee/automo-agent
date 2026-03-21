@@ -1,12 +1,10 @@
 import { useState } from "react";
 import ChatMessages from "./chat-messages";
+import { DEFAULT_CONFIG } from "../llm";
 
 function ChatWindow() {
-    const [count, setCount] = useState(0);
-    const [messages, setMessages] = useState([
-        { id: 1, type: "incoming", body: { text: "Hello!" } },
-        { id: 2, type: "outgoing", body: { text: "Hello Back!" } },
-    ]);
+    const [llmConfig, setLlmConfig] = useState({ ...DEFAULT_CONFIG });
+    const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -19,18 +17,32 @@ function ChatWindow() {
         };
         setMessages([...messages, newMessage]);
         setInputValue("");
-        setIsLoading(true);
 
         // Simulate an incoming message after a delay
-        setTimeout(() => {
+        (async () => {
+            setIsLoading(true);
+
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const response = await window.api.processPrompt(
+                inputValue,
+                messages.map((m) => ({
+                    role: m.type === "outgoing" ? "user" : "assistant",
+                    content: m.body.text,
+                })),
+                llmConfig,
+            );
+            console.log("Response from main process:", response);
+
             const incomingMessage = {
                 id: Date.now() + 1,
                 type: "incoming",
-                body: { text: "This is an automated response." },
+                body: { text: response },
             };
             setMessages((prevMessages) => [...prevMessages, incomingMessage]);
+
             setIsLoading(false);
-        }, 1000);
+        })();
     };
 
     return (
