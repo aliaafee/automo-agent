@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
-import { processPrompt } from "./llm";
+import { DEFAULT_CONFIG, processPrompt } from "./llm";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -42,6 +42,10 @@ const createWindow = () => {
 app.whenReady().then(() => {
     ipcMain.handle("processPrompt", async (event, prompt, history, config) => {
         return await processPrompt(prompt, history, config);
+    });
+
+    ipcMain.handle("getDefaultConfig", async () => {
+        return { ...DEFAULT_CONFIG };
     });
 
     createWindow();

@@ -6,4 +6,5 @@ const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("api", {
     processPrompt: (prompt, history, config) =>
         ipcRenderer.invoke("processPrompt", prompt, history, config),
+    getDefaultConfig: () => ipcRenderer.invoke("getDefaultConfig"),
 });

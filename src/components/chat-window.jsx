@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChatMessages from "./chat-messages";
 import { DEFAULT_CONFIG } from "../llm";
 
 function ChatWindow() {
-    const [llmConfig, setLlmConfig] = useState({ ...DEFAULT_CONFIG });
+    const [llmConfig, setLlmConfig] = useState({});
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        // Fetch default LLM config from main process on mount
+        (async () => {
+            const config = await window.api.getDefaultConfig();
+            setLlmConfig(config);
+        })();
+    }, []);
 
     const sendMessage = () => {
         if (inputValue.trim() === "") return;
@@ -21,8 +29,6 @@ function ChatWindow() {
         // Simulate an incoming message after a delay
         (async () => {
             setIsLoading(true);
-
-            await new Promise((resolve) => setTimeout(resolve, 1000));
 
             const response = await window.api.processPrompt(
                 inputValue,
