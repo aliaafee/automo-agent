@@ -18,6 +18,7 @@ function ChatWindow() {
     }, []);
 
     useEffect(() => {
+        // Listen for status updates from the main process
         const handler = (message) => {
             setStatus(message);
             // console.log("Status update:", message);
