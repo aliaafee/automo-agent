@@ -70,9 +70,10 @@ Rules:
     }
 };
 
-const processByIntent = async (intent, prompt, history, config) => {
+const processByIntent = async (intent, prompt, history, config, onStatus) => {
     switch (intent.action) {
         case "chat":
+            onStatus?.("Generating response…");
             const response = await callLLM(
                 [{ role: "user", content: prompt }],
                 config,
@@ -85,12 +86,13 @@ const processByIntent = async (intent, prompt, history, config) => {
     }
 };
 
-const processPrompt = async (prompt, history, config) => {
+const processPrompt = async (prompt, history, config, onStatus) => {
     try {
+        onStatus?.("Detecting intent…");
         const intent = await detectIntent(prompt, history, config);
         console.log("Detected intent:", intent);
 
-        return processByIntent(intent, prompt, history, config);
+        return processByIntent(intent, prompt, history, config, onStatus);
     } catch (error) {
         console.error("Error processing prompt:", error);
         return `Error: ${error.message}`;

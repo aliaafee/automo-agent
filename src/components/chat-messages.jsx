@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import Message from "./message";
 
-function ChatMessages({ messages, className, isLoading }) {
+function ChatMessages({ messages, className, isLoading, status }) {
     const bottomRef = useRef(null);
 
     useEffect(() => {
@@ -16,7 +16,9 @@ function ChatMessages({ messages, className, isLoading }) {
             ))}
             {isLoading && (
                 <div className="flex justify-center items-center py-2">
-                    <div className="loader">Working...</div>
+                    <div className="loader">
+                        {status ? status : "Working..."}
+                    </div>
                 </div>
             )}
             <div ref={bottomRef} />

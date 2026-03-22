@@ -41,7 +41,9 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
     ipcMain.handle("processPrompt", async (event, prompt, history, config) => {
-        return await processPrompt(prompt, history, config);
+        const sendStatus = (message) =>
+            event.sender.send("status-update", message);
+        return await processPrompt(prompt, history, config, sendStatus);
     });
 
     ipcMain.handle("getDefaultConfig", async () => {

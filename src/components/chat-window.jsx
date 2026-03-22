@@ -7,6 +7,7 @@ function ChatWindow() {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [status, setStatus] = useState("");
 
     useEffect(() => {
         // Fetch default LLM config from main process on mount
@@ -14,6 +15,15 @@ function ChatWindow() {
             const config = await window.api.getDefaultConfig();
             setLlmConfig(config);
         })();
+    }, []);
+
+    useEffect(() => {
+        const handler = (message) => {
+            setStatus(message);
+            // console.log("Status update:", message);
+        };
+        window.api.onStatusUpdate(handler);
+        return () => window.api.offStatusUpdate(handler);
     }, []);
 
     const sendMessage = () => {
@@ -57,6 +67,7 @@ function ChatWindow() {
             <ChatMessages
                 messages={messages}
                 isLoading={isLoading}
+                status={status}
                 className="grow"
             />
 
