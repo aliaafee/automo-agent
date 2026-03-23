@@ -78,6 +78,34 @@ const callLLMAgent = async (messages, config) => {
     return data.choices?.[0]?.message;
 };
 
+const callLLMWithTools = async (messages, tools, config) => {
+    const body = {
+        model: config.model,
+        temperature: 0.3,
+        max_tokens: 1024,
+        tools: tools,
+        tool_choice: "auto",
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+    };
+
+    const response = await fetch(`${config.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`LLM error ${response.status}: ${err}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message;
+};
+
 const executeTool = async (name, args, config, onStatus) => {
     switch (name) {
         case "get_patient":

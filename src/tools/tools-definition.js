@@ -78,4 +78,29 @@ const TOOLS = [
     },
 ];
 
-export { TOOLS };
+const executeTool = async (name, args, config, onStatus) => {
+    switch (name) {
+        case "get_patient":
+            onStatus?.(`Fetching patient ${args.patientId}…`);
+            return await getPatient(args.patientId);
+        case "get_episodes":
+            onStatus?.(`Fetching episodes for ${args.patientId}…`);
+            return await getEpisodes(args.patientId);
+        case "get_clinical_notes":
+            onStatus?.("Fetching clinical notes…");
+            return await getClinicalNotes(args.episodeIds);
+        case "generate_discharge_summary": {
+            const result = await generateDischargeSummary(
+                args.patientId,
+                callLLM,
+                config,
+                onStatus,
+            );
+            return result;
+        }
+        default:
+            throw new Error(`Unknown tool: ${name}`);
+    }
+};
+
+export { TOOLS, executeTool };
