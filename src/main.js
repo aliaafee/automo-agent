@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { DEFAULT_CONFIG, processPrompt } from "./llm";
+import { runAgent } from "./agent";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -40,6 +41,12 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+    ipcMain.handle("runAgent", async (event, prompt, history, config) => {
+        const sendStatus = (message) =>
+            event.sender.send("status-update", message);
+        return await runAgent(prompt, history, config, sendStatus);
+    });
+
     ipcMain.handle("processPrompt", async (event, prompt, history, config) => {
         const sendStatus = (message) =>
             event.sender.send("status-update", message);

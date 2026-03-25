@@ -1,6 +1,22 @@
 import { twMerge } from "tailwind-merge";
 
 function Message({ message, className }) {
+    if (message.type === "error") {
+        return (
+            <div
+                className={twMerge(
+                    "flex gap-2 mb-2",
+                    "justify-start",
+                    className,
+                )}
+            >
+                <div className="rounded-lg  bg-red-300 p-2 whitespace-pre-wrap mr-4">
+                    Error: {message.body.text}
+                </div>
+            </div>
+        );
+    }
+
     if (message.type === "incoming") {
         return (
             <div

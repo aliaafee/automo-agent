@@ -1,3 +1,6 @@
+import { getPatient, getEpisodes, getClinicalNotes } from "./emr-connector";
+import { generateDischargeSummary } from "./generate_document";
+
 const TOOLS = [
     {
         type: "function",
@@ -78,7 +81,7 @@ const TOOLS = [
     },
 ];
 
-const executeTool = async (name, args, config, onStatus) => {
+const executeTool = async (name, args, callLLM, config, onStatus) => {
     switch (name) {
         case "get_patient":
             onStatus?.(`Fetching patient ${args.patientId}…`);

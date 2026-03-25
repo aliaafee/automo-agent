@@ -1,10 +1,10 @@
-import { generateDischargeSummary } from "./tools/generate_document";
-import {
-    getPatient,
-    getEpisodes,
-    getClinicalNotes,
-} from "./tools/emr-connector";
-import { TOOLS } from "./tools/tools-definition";
+// import { generateDischargeSummary } from "./tools/generate_document";
+// import {
+//     getPatient,
+//     getEpisodes,
+//     getClinicalNotes,
+// } from "./tools/emr-connector";
+// import { TOOLS } from "./tools/tools-definition";
 
 const DEFAULT_CONFIG = {
     baseUrl: "http://192.168.100.2:8080/v1", // Ollama default  (LM Studio: http://localhost:1234/v1)
@@ -49,34 +49,34 @@ const callLLM = async (messages, config, systemPrompt = null) => {
     return data.choices?.[0]?.message?.content?.trim() || "No response.";
 };
 
-// Agent call — sends tools and returns the full message object
-const callLLMAgent = async (messages, config) => {
-    const body = {
-        model: config.model,
-        temperature: 0.3,
-        max_tokens: 1024,
-        tools: TOOLS,
-        tool_choice: "auto",
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
-    };
+// // Agent call — sends tools and returns the full message object
+// const callLLMAgent = async (messages, config) => {
+//     const body = {
+//         model: config.model,
+//         temperature: 0.3,
+//         max_tokens: 1024,
+//         tools: TOOLS,
+//         tool_choice: "auto",
+//         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+//     };
 
-    const response = await fetch(`${config.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config.apiKey}`,
-        },
-        body: JSON.stringify(body),
-    });
+//     const response = await fetch(`${config.baseUrl}/chat/completions`, {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${config.apiKey}`,
+//         },
+//         body: JSON.stringify(body),
+//     });
 
-    if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`LLM error ${response.status}: ${err}`);
-    }
+//     if (!response.ok) {
+//         const err = await response.text();
+//         throw new Error(`LLM error ${response.status}: ${err}`);
+//     }
 
-    const data = await response.json();
-    return data.choices?.[0]?.message;
-};
+//     const data = await response.json();
+//     return data.choices?.[0]?.message;
+// };
 
 const callLLMWithTools = async (messages, tools, config) => {
     const body = {
@@ -106,30 +106,30 @@ const callLLMWithTools = async (messages, tools, config) => {
     return data.choices?.[0]?.message;
 };
 
-const executeTool = async (name, args, config, onStatus) => {
-    switch (name) {
-        case "get_patient":
-            onStatus?.(`Fetching patient ${args.patientId}…`);
-            return await getPatient(args.patientId);
-        case "get_episodes":
-            onStatus?.(`Fetching episodes for ${args.patientId}…`);
-            return await getEpisodes(args.patientId);
-        case "get_clinical_notes":
-            onStatus?.("Fetching clinical notes…");
-            return await getClinicalNotes(args.episodeIds);
-        case "generate_discharge_summary": {
-            const result = await generateDischargeSummary(
-                args.patientId,
-                callLLM,
-                config,
-                onStatus,
-            );
-            return result;
-        }
-        default:
-            throw new Error(`Unknown tool: ${name}`);
-    }
-};
+// const executeTool = async (name, args, config, onStatus) => {
+//     switch (name) {
+//         case "get_patient":
+//             onStatus?.(`Fetching patient ${args.patientId}…`);
+//             return await getPatient(args.patientId);
+//         case "get_episodes":
+//             onStatus?.(`Fetching episodes for ${args.patientId}…`);
+//             return await getEpisodes(args.patientId);
+//         case "get_clinical_notes":
+//             onStatus?.("Fetching clinical notes…");
+//             return await getClinicalNotes(args.episodeIds);
+//         case "generate_discharge_summary": {
+//             const result = await generateDischargeSummary(
+//                 args.patientId,
+//                 callLLM,
+//                 config,
+//                 onStatus,
+//             );
+//             return result;
+//         }
+//         default:
+//             throw new Error(`Unknown tool: ${name}`);
+//     }
+// };
 
 const processPrompt = async (prompt, history, config, onStatus) => {
     try {
@@ -182,4 +182,4 @@ const processPrompt = async (prompt, history, config, onStatus) => {
     }
 };
 
-export { DEFAULT_CONFIG, processPrompt };
+export { DEFAULT_CONFIG, processPrompt, callLLMWithTools, callLLM };

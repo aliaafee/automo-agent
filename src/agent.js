@@ -1,7 +1,7 @@
-import { TOOLS } from "./tools/tools-definition";
-import { callLLMWithTools } from "./llm";
+import { TOOLS, executeTool } from "./tools/tools-definition";
+import { callLLMWithTools, callLLM } from "./llm";
 
-const maxAgentIterations = 5;
+const maxAgentIterations = 1000;
 
 const runAgent = async (prompt, history = [], config = {}, onStatus) => {
     try {
@@ -36,6 +36,7 @@ const runAgent = async (prompt, history = [], config = {}, onStatus) => {
                     const result = await executeTool(
                         call.function.name,
                         args,
+                        callLLM,
                         config,
                         onStatus,
                     );
@@ -49,6 +50,11 @@ const runAgent = async (prompt, history = [], config = {}, onStatus) => {
 
             messages.push(...toolResults);
         }
+
+        return {
+            type: "error",
+            message: "Max Iterations Reached.",
+        };
     } catch (error) {
         console.error("Error running agent:", error);
         return {

@@ -27,6 +27,14 @@ function ChatWindow() {
         return () => window.api.offStatusUpdate(handler);
     }, []);
 
+    const getHistory = () =>
+        messages
+            .filter((m) => m.type === "incoming" || m.type === "outgoing")
+            .map((m) => ({
+                role: m.type === "outgoing" ? "user" : "assistant",
+                content: m.body.text,
+            }));
+
     const sendMessage = () => {
         if (inputValue.trim() === "") return;
         const newMessage = {
@@ -41,24 +49,48 @@ function ChatWindow() {
         (async () => {
             setIsLoading(true);
 
-            const response = await window.api.processPrompt(
-                inputValue,
-                messages.map((m) => ({
-                    role: m.type === "outgoing" ? "user" : "assistant",
-                    content: m.body.text,
-                })),
-                llmConfig,
-            );
-            console.log("Response from main process:", response);
+            try {
+                const response = await window.api.runAgent(
+                    inputValue,
+                    getHistory(),
+                    llmConfig,
+                );
+                console.log("Response from main process:", response);
 
-            const incomingMessage = {
-                id: Date.now() + 1,
-                type: "incoming",
-                body: { text: response },
-            };
-            setMessages((prevMessages) => [...prevMessages, incomingMessage]);
+                if (response.type === "error") {
+                    throw new Error(response.message);
+                }
 
-            setIsLoading(false);
+                let incomingMessage = {
+                    id: Date.now() + 1,
+                };
+                if (response.type === "response") {
+                    incomingMessage = {
+                        ...incomingMessage,
+                        type: "incoming",
+                        body: { text: response.content },
+                    };
+                } else {
+                    incomingMessage = {
+                        ...incomingMessage,
+                        type: "incoming",
+                        body: { text: "Unknown response type" },
+                    };
+                }
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    incomingMessage,
+                ]);
+            } catch (error) {
+                const errorMessage = {
+                    id: Date.now() + 1,
+                    type: "error",
+                    body: { text: error.message },
+                };
+                setMessages((prevMessages) => [...prevMessages, errorMessage]);
+            } finally {
+                setIsLoading(false);
+            }
         })();
     };
 
