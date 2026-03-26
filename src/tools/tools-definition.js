@@ -65,7 +65,7 @@ const TOOLS = [
         function: {
             name: "generate_discharge_summary",
             description:
-                "Generate a structured clinical discharge summary for a patient using their EMR data and clinical notes. Returns a formatted narrative document.",
+                "Generate a structured clinical discharge summary for a patient using their EMR data and clinical notes. Returns a formatted JSON document.",
             parameters: {
                 type: "object",
                 properties: {
@@ -73,6 +73,12 @@ const TOOLS = [
                         type: "string",
                         description:
                             "The unique patient identifier, e.g. P001.",
+                    },
+                    episodeIds: {
+                        type: "array",
+                        items: { type: "string" },
+                        description:
+                            'Optional list of episode IDs to include in the summary. If omitted, all episodes for the patient are used, e.g. ["E001"].',
                     },
                 },
                 required: ["patientId"],
@@ -95,6 +101,7 @@ const executeTool = async (name, args, callLLM, config, onStatus) => {
         case "generate_discharge_summary": {
             const result = await generateDischargeSummary(
                 args.patientId,
+                args.episodeIds,
                 callLLM,
                 config,
                 onStatus,

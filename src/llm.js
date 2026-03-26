@@ -1,14 +1,8 @@
-// import { generateDischargeSummary } from "./tools/generate_document";
-// import {
-//     getPatient,
-//     getEpisodes,
-//     getClinicalNotes,
-// } from "./tools/emr-connector";
-// import { TOOLS } from "./tools/tools-definition";
+import { TOOLS, executeTool } from "./tools/tools-definition";
 
 const DEFAULT_CONFIG = {
-    baseUrl: "http://192.168.100.2:8080/v1", // Ollama default  (LM Studio: http://localhost:1234/v1)
-    model: "qwen3-vl-8b-instruct", // Model name as listed in your server
+    baseUrl: "http://localhost:1234/v1", // Ollama default  (LM Studio: http://localhost:1234/v1)
+    model: "qwen/qwen3.5-9b", // Model name as listed in your server
     apiKey: "ollama", // Ollama ignores this; LM Studio uses "lm-studio"
     contextWindow: 4096, // Max tokens your model supports
     chunkSize: 1800, // Characters per chunk of clinical notes
@@ -39,6 +33,8 @@ const callLLM = async (messages, config, systemPrompt = null) => {
         },
         body: JSON.stringify(body),
     });
+
+    console.log("LLM API response:", response);
 
     if (!response.ok) {
         const err = await response.text();
@@ -144,7 +140,7 @@ const processPrompt = async (prompt, history, config, onStatus) => {
         // Agentic loop — keep going until the model returns a plain text response
         while (true) {
             onStatus?.("Thinking…");
-            const message = await callLLMAgent(messages, config);
+            const message = await callLLMWithTools(messages, TOOLS, config);
             messages.push(message);
 
             console.log("LLM response:", message);
@@ -163,6 +159,7 @@ const processPrompt = async (prompt, history, config, onStatus) => {
                     const result = await executeTool(
                         call.function.name,
                         args,
+                        callLLM,
                         config,
                         onStatus,
                     );

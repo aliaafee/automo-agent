@@ -40,6 +40,10 @@ const runAgent = async (prompt, history = [], config = {}, onStatus) => {
                         config,
                         onStatus,
                     );
+                    console.log(
+                        `Result from tool ${call.function.name}:`,
+                        result,
+                    );
                     return {
                         role: "tool",
                         tool_call_id: call.id,
